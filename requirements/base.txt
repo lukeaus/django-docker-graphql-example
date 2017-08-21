@@ -57,3 +57,6 @@ pytz==2017.2
 singledispatch==3.4.0.3
 six==1.10.0
 typing==3.6.2
+
+# django-filter
+django-filter==1.0.4

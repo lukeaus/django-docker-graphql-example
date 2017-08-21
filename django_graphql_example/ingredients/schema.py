@@ -1,59 +1,35 @@
-import graphene
-from graphene_django.types import DjangoObjectType
+from graphene import relay, ObjectType, AbstractType
+from graphene_django import DjangoObjectType
+from graphene_django.filter import DjangoFilterConnectionField
 from .models import Category, Ingredient
 
 
-class CategoryType(DjangoObjectType):
+# Graphene will automatically map the Category model's fields onto the CategoryNode.
+# This is configured in the CategoryNode's Meta class (as you can see below)
+class CategoryNode(DjangoObjectType):
     class Meta:
         model = Category
+        filter_fields = ['name', 'ingredients']
+        interfaces = (relay.Node, )
 
 
-class IngredientType(DjangoObjectType):
+class IngredientNode(DjangoObjectType):
     class Meta:
         model = Ingredient
+        # Allow for some more advanced filtering here
+        filter_fields = {
+            'name': ['exact', 'icontains', 'istartswith'],
+            'notes': ['exact', 'icontains'],
+            'category': ['exact'],
+            'category__name': ['exact'],
+        }
+        interfaces = (relay.Node, )
 
 
-# abstract type because we will create a project level query which combines all
-# our app-level queries
-class Query(graphene.AbstractType):
-    category = graphene.Field(CategoryType,
-                              id=graphene.Int(),
-                              name=graphene.String())
-    # note these are automatically camelCased by graphene
-    all_categories = graphene.List(CategoryType)
+class Query(AbstractType):
+    """Note these are automatically camelCased by graphene"""
+    category = relay.Node.Field(CategoryNode)
+    all_categories = DjangoFilterConnectionField(CategoryNode)
 
-    ingredient = graphene.Field(IngredientType,
-                                id=graphene.Int(),
-                                name=graphene.String())
-    all_ingredients = graphene.List(IngredientType)
-
-    def resolve_all_categories(self, args, context, info):
-        return Category.objects.all()
-
-    def resolve_category(self, args, context, info):
-        id_ = args.get('id')
-        name = args.get('name')
-
-        if id_ is not None:
-            return Category.objects.get(pk=id_)
-
-        if name is not None:
-            return Category.objects.get(name=name)
-
-        return None
-
-    def resolve_all_ingredients(self, args, context, info):
-        # We can easily optimize query count in the resolve method
-        return Ingredient.objects.select_related('category').all()
-
-    def resolve_ingredient(self, args, context, info):
-        id_ = args.get('id')
-        name = args.get('name')
-
-        if id is not None:
-            return Ingredient.objects.get(pk=id_)
-
-        if name is not None:
-            return Ingredient.objects.get(name=name)
-
-        return None
+    ingredient = relay.Node.Field(IngredientNode)
+    all_ingredients = DjangoFilterConnectionField(IngredientNode)

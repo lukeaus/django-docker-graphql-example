@@ -55,8 +55,8 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     # custom users app
     'django_graphql_example.users.apps.UsersConfig',
+    'graphene_django',
     'ingredients',
-    'graphene_django'
 ]
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
