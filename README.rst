@@ -11,6 +11,22 @@ An example app with django and GraphQL
 :License: MIT
 
 
+
+Getting Started
+---------------
+1. install docker
+2. git clone https://github.com/lukeaus/django-docker-graphql-example
+3. cd django-docker-graphql-example
+4. docker-compose -f local.yml up
+
+Go to homepage
+http://127.0.0.1:8000
+
+Go to GraphQl dialog
+http://127.0.0.1:8000/graphql
+
+
+
 Settings
 --------
 
